@@ -1,4 +1,4 @@
-package com.dbk.to_read_list
+package com.dbk.dallar
 
 import io.flutter.embedding.android.FlutterActivity
 

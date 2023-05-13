@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>To Read List</string>
+	<string>Dallar</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -44,7 +44,7 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
     <key>AppGroupId</key>
-    <string>$(CUSTOM_GROUP_ID)</string>
+    <string>group.com.dbk.dallar</string>
     <key>CFBundleURLTypes</key>
     	<array>
     		<dict>
@@ -56,8 +56,11 @@
     			</array>
     		</dict>
     	</array>
-
     <key>NSPhotoLibraryUsageDescription</key>
     <string>To upload photos, please allow permission to access your photo library.</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 </dict>
 </plist>

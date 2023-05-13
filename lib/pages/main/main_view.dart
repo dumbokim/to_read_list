@@ -10,32 +10,31 @@ class MainView extends StatefulWidget {
   State<MainView> createState() => _MainViewState();
 }
 
+const _pageTitle = [
+  '홈',
+  '리스트',
+  '추천',
+  '마이페이지'
+];
+
 class _MainViewState extends State<MainView> {
   int _currentIdx = 0;
-
-  final _pageTitle = [
-    '홈',
-    '리스트',
-    '추천',
-    '마이페이지'
-  ];
-
 
   final _pages = <Widget>[
     const HomeView(),
     Container(
       child: Center(
-        child: Text('리스트'),
+        child: Text(_pageTitle[1]),
       ),
     ),
     Container(
       child: Center(
-        child: Text('추천'),
+        child: Text(_pageTitle[2]),
       ),
     ),
     Container(
       child: Center(
-        child: Text('마이페이지'),
+        child: Text(_pageTitle[3]),
       ),
     ),
   ];

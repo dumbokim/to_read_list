@@ -7,6 +7,7 @@ import 'package:flutter_sharing_intent/model/sharing_file.dart';
 import 'package:isar/isar.dart' as isar;
 import 'package:to_read_list/model/model.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -24,10 +25,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    _initializeStream();
-    _initializeIsar().then(
-      (_) => _getInitialShared(),
-    );
+    _initialize();
   }
 
   @override
@@ -39,107 +37,111 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              child: ListView.separated(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemBuilder: (BuildContext context, int index) {
-                    return InkWell(
-                      onLongPress: () async {
-                        await _showDeleteDialog(index);
-                      },
-                      onTap: () async {
-                        final url = _dataList[index].url;
-                        await launchUrlString(url,
-                            mode: LaunchMode.externalApplication);
-                        await _changeEntityStatus(
-                          link: _dataList[index],
-                          status: Status.read,
-                        );
-                      },
-                      child: Ink(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          foregroundDecoration: BoxDecoration(
-                            color: _dataList[index].status == Status.read
-                                ? const Color(0x5A000000)
-                                : Colors.transparent,
-                          ),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                          ),
-                          child: IgnorePointer(
-                            child: al.AnyLinkPreview.builder(
-                              link: _dataList[index].url,
-                              itemBuilder: (
-                                BuildContext context,
-                                al.Metadata meta,
-                                ImageProvider<Object>? img,
-                              ) {
-                                return Row(
-                                  children: [
-                                    img != null
-                                        ? Container(
-                                            height: 50,
-                                            width: 50,
-                                            decoration: BoxDecoration(
-                                              image:
-                                                  DecorationImage(image: img),
+      body: RefreshIndicator(
+        onRefresh: () async => await _getDataFromDb(),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                child: ListView.separated(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      return InkWell(
+                        onLongPress: () async {
+                          await _showDeleteDialog(index);
+                        },
+                        onTap: () async {
+                          final url = _dataList[index].url;
+                          await launchUrlString(url,
+                              mode: LaunchMode.externalApplication);
+                          await _changeEntityStatus(
+                            link: _dataList[index],
+                            status: Status.read,
+                          );
+                        },
+                        child: Ink(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            foregroundDecoration: BoxDecoration(
+                              color: _dataList[index].status == Status.read
+                                  ? const Color(0x5A000000)
+                                  : Colors.transparent,
+                            ),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                            ),
+                            child: IgnorePointer(
+                              child: al.AnyLinkPreview.builder(
+                                link: _dataList[index].url,
+                                itemBuilder: (
+                                  BuildContext context,
+                                  al.Metadata meta,
+                                  ImageProvider<Object>? img,
+                                ) {
+                                  return Row(
+                                    children: [
+                                      img != null
+                                          ? Container(
+                                              height: 50,
+                                              width: 50,
+                                              decoration: BoxDecoration(
+                                                image:
+                                                    DecorationImage(image: img),
+                                              ),
+                                            )
+                                          : Container(
+                                              height: 50,
+                                              width: 50,
+                                              color: Colors.grey,
                                             ),
-                                          )
-                                        : Container(
-                                            height: 50,
-                                            width: 50,
-                                            color: Colors.grey,
-                                          ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            meta.title ?? '',
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600,
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              meta.title ?? '',
+                                              style: const TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                             ),
-                                          ),
-                                          Text(
-                                            meta.desc ?? '',
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontSize: 13,
+                                            Text(
+                                              meta.desc ?? '',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                );
-                              },
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  );
+                                },
+                                errorWidget: Container(child: Text("Error"),),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    return Container(
-                      height: 2,
-                      color: Color(0xC0CCCCCC),
-                    );
-                  },
-                  itemCount: _dataList.length),
-            )
-          ],
+                      );
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      return Container(
+                        height: 2,
+                        color: const Color(0xC0CCCCCC),
+                      );
+                    },
+                    itemCount: _dataList.length),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -162,10 +164,8 @@ class _HomeViewState extends State<HomeView> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton(
-                      onPressed: () {
-                        Navigator.maybePop(context);
-                      },
-                      child: Text('취소'),
+                      onPressed: () => Navigator.maybePop(context),
+                      child: const Text('취소'),
                     ),
                     const SizedBox(width: 20),
                     TextButton(
@@ -180,7 +180,7 @@ class _HomeViewState extends State<HomeView> {
                         }
                         Navigator.maybePop(context);
                       },
-                      child: Text('삭제'),
+                      child: const Text('삭제'),
                     )
                   ],
                 )
@@ -211,41 +211,57 @@ class _HomeViewState extends State<HomeView> {
     _isar = await isar.Isar.open([LinkSchema]);
   }
 
-  Future<void> _initializeStream() async {
-    _intentDataStreamSubscription = FlutterSharingIntent.instance
-        .getMediaStream()
-        .listen((List<SharedFile> value) async {
-      final link = value.map((f) => f.value).join(",");
+  Future<void> _initialize() async {
+    await _initializeIsar();
 
-      if (link.isEmpty) {
-        return;
-      }
+    final sharing = FlutterSharingIntent.instance;
 
-      final newLink = Link()
-        ..url = link
-        ..summary = ''
-        ..status = Status.unread
-        ..userUuid = ''
-        ..title = ''
-        ..createdDate = DateTime.now().millisecondsSinceEpoch;
+    await _getInitialShared(sharing);
 
-      await _isar?.writeTxn(() async {
-        await _isar?.links.put(newLink); // insert & update
-      });
-
-      await _getDataFromDb();
-    }, onError: (err) {
-      print("getIntentDataStream error: $err");
-    });
+    _initializeStream(sharing);
   }
 
-  Future<void> _getInitialShared() async {
-    FlutterSharingIntent.instance.getInitialSharing().then((value) async {
-      final link = value.map((f) => f.value).join(",");
-      if (link.isEmpty) {
-        return;
-      }
+  void _initializeStream(FlutterSharingIntent sharing) {
+    _intentDataStreamSubscription = sharing.getMediaStream().listen(
+      (List<SharedFile> value) async {
+        final link = value.map((f) => f.value).join(",");
 
+        if (link.isEmpty) {
+          return;
+        }
+
+        final newLink = Link()
+          ..url = link
+          ..summary = ''
+          ..status = Status.unread
+          ..userUuid = ''
+          ..title = ''
+          ..createdDate = DateTime.now().millisecondsSinceEpoch;
+
+        await _isar?.writeTxn(() async => await _isar?.links.put(newLink));
+
+        await _getDataFromDb();
+      },
+      onError: (err) {
+        print(err);
+        _showSnackBar();
+      },
+    );
+  }
+
+  void _showSnackBar() {
+    final helloWorld = AppLocalizations.of(context)?.helloWorld;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("$helloWorld")),
+    );
+  }
+
+  Future<void> _getInitialShared(FlutterSharingIntent sharing) async {
+    final initialSharing = await sharing.getInitialSharing();
+
+    final link = initialSharing.map((f) => f.value).join(",");
+    if (link.isNotEmpty) {
       final newLink = Link()
         ..url = link
         ..summary = ''
@@ -254,16 +270,14 @@ class _HomeViewState extends State<HomeView> {
         ..title = ''
         ..createdDate = DateTime.now().millisecondsSinceEpoch;
 
-      await _isar?.writeTxn(() async {
-        await _isar?.links.put(newLink); // insert & update
-      });
+      await _isar?.writeTxn(() async => await _isar?.links.put(newLink));
+    }
 
-      await _getDataFromDb();
-    });
+    await _getDataFromDb();
   }
 
   Future<void> _getDataFromDb() async {
-    final datas = ((await _isar?.links
+    final data = ((await _isar?.links
                 .filter()
                 .urlContains('http')
                 .and()
@@ -272,7 +286,7 @@ class _HomeViewState extends State<HomeView> {
             [])
         .reversed;
     _dataList.clear();
-    _dataList.addAll(datas);
+    _dataList.addAll(data);
 
     setState(() {});
   }
